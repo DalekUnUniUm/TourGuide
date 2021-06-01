@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 public class LocationController {
 
@@ -15,7 +17,7 @@ public class LocationController {
     private LocationService locationService ;
 
     @GetMapping("/getLocation")
-    public Location getLocation(@RequestParam("userId") int userId){
+    public Location getLocation(@RequestParam("userId") UUID userId){
         return locationService.getLocation(userId) ;
     }
 

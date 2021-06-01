@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,9 +21,11 @@ import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
+import org.springframework.web.client.RestTemplate;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.tracker.Tracker;
 import tourGuide.user.User;
+import tourGuide.user.UserLocation;
 import tourGuide.user.UserReward;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
@@ -35,7 +38,7 @@ public class TourGuideService {
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
-	
+
 	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
@@ -60,7 +63,28 @@ public class TourGuideService {
 			trackUserLocation(user);
 		return visitedLocation;
 	}
-	
+
+	/**NEW SERVICE FOR COMMUNICATING WITH THE API GPS UTIL!!!!!**/
+	public String getUserLocationFromApi(User user){
+		String url = "http://localhost:9001/getLocation?userId="+user.getUserId();
+		System.out.println("url = " + url);
+		RestTemplate restTemplate = new RestTemplate();
+		String response = restTemplate.getForObject(url,String.class);
+		return response ;
+	}
+	public UserLocation trackUserLocations(User user){
+		String getUserLocation = getUserLocationFromApi(user) ;
+		UserLocation userLocation = new Gson().fromJson(getUserLocation,UserLocation.class);
+		user.addToUserLocations(userLocation);
+		return userLocation ;
+	}
+	public UserLocation getUserLocations(User user){
+		UserLocation userLocation = (user.getUserLocations().size() > 0) ?
+				user.getLastUserLocation() :
+				trackUserLocations(user);
+		return userLocation ;
+	}
+	/**--------------------------------------------------------**/
 	public User getUser(String userName) {
 		return internalUserMap.get(userName);
 	}
@@ -89,7 +113,6 @@ public class TourGuideService {
 		rewardsService.calculateRewards(user);
 		return visitedLocation;
 	}
-
 	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		List<Attraction> nearbyAttractions = new ArrayList<>();
 		for(Attraction attraction : gpsUtil.getAttractions()) {

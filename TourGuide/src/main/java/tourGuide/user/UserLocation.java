@@ -1,4 +1,4 @@
-package com.gpsutil.gpsutilmvc.model;
+package tourGuide.user;
 
 import org.springframework.stereotype.Component;
 
@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Component
-public class Location {
+public class UserLocation {
 
     private UUID userId ;
 
@@ -46,5 +46,12 @@ public class Location {
 
     public void setTimeLocation(Date timeLocation) {
         this.timeLocation = timeLocation;
+    }
+
+    public UserLocation(UUID userId, double latitude, double longitude, Date timeLocation){
+        this.userId = userId ;
+        this.latitude = latitude ;
+        this.longitude = longitude ;
+        this.timeLocation = timeLocation ;
     }
 }
