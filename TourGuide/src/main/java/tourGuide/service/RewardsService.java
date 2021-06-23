@@ -1,15 +1,22 @@
 package tourGuide.service;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.springframework.stereotype.Service;
 
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
+import org.springframework.web.client.RestTemplate;
 import rewardCentral.RewardCentral;
 import tourGuide.user.User;
+import tourGuide.user.UserAttraction;
+import tourGuide.user.UserLocation;
 import tourGuide.user.UserReward;
 
 @Service
@@ -32,37 +39,43 @@ public class RewardsService {
 		this.proximityBuffer = proximityBuffer;
 	}
 	
-	public void setDefaultProximityBuffer() {
-		proximityBuffer = defaultProximityBuffer;
-	}
-	
 	public void calculateRewards(User user) {
-		List<VisitedLocation> userLocations = user.getVisitedLocations();
-		List<Attraction> attractions = gpsUtil.getAttractions();
-		
-		for(VisitedLocation visitedLocation : userLocations) {
-			for(Attraction attraction : attractions) {
-				if(user.getUserRewards().stream().filter(r -> r.attraction.attractionName.equals(attraction.attractionName)).count() == 0) {
-					if(nearAttraction(visitedLocation, attraction)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+		List<UserLocation> userLocations = user.getUserLocations();
+		List<UserAttraction> attractions = getAttraction();
+
+		for(UserLocation userLocation : userLocations) {
+			for(UserAttraction userAttraction : attractions) {
+				if(user.getUserRewards().stream().filter(r -> r.userAttraction.getAttractionName().equals(userAttraction.getAttractionName())).count() == 0) {
+					if(nearAttraction(userLocation, userAttraction)) {
+						user.addUserReward(new UserReward(userLocation, userAttraction, getRewardPoint(userAttraction)));
 					}
 				}
 			}
 		}
 	}
-	
+	public List<UserAttraction> getAttraction(){
+        String url = "http://localhost:9001/getAttractions";
+        RestTemplate restTemplate = new RestTemplate();
+        String reponse = restTemplate.getForObject(url,String.class);
+        Type attractionListType = new TypeToken<ArrayList<UserAttraction>>(){}.getType();
+	    List<UserAttraction> attractionList = new Gson().fromJson(reponse, attractionListType);
+	    return attractionList ;
+    }
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
 		return getDistance(attraction, location) > attractionProximityRange ? false : true;
 	}
 	
-	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
-		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;
+	private boolean nearAttraction(UserLocation userLocation, UserAttraction userAttraction) {
+		return getDistances(userLocation, userAttraction) > proximityBuffer ? false : true;
 	}
-	
-	private int getRewardPoints(Attraction attraction, User user) {
-		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
+	/**Get Reward Points from API**/
+	public int getRewardPoint(UserAttraction userAttraction){
+        String url = "http://localhost:9002/getAttractionRewardPoints";
+        RestTemplate restTemplate = new RestTemplate();
+        String reponse = restTemplate.getForObject(url,String.class);
+        return Integer.valueOf(reponse) ;
 	}
-	
+
 	public double getDistance(Location loc1, Location loc2) {
         double lat1 = Math.toRadians(loc1.latitude);
         double lon1 = Math.toRadians(loc1.longitude);
@@ -76,5 +89,20 @@ public class RewardsService {
         double statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
         return statuteMiles;
 	}
+    public double getDistances(UserLocation userLocation, UserAttraction userAttraction) {
+        double lat1 = Math.toRadians(userLocation.getLatitude());
+        double lon1 = Math.toRadians(userLocation.getLongitude());
+        double lat2 = Math.toRadians(userAttraction.getLatitude());
+        double lon2 = Math.toRadians(userAttraction.getLongitude());
+
+        double angle = Math.acos(Math.sin(lat1) * Math.sin(lat2)
+                + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));
+
+        double nauticalMiles = 60 * Math.toDegrees(angle);
+        double statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
+        double statueKilometers = statuteMiles * 1.6 ;
+
+        return statueKilometers;
+    }
 
 }

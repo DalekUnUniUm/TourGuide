@@ -20,6 +20,8 @@ import tourGuide.helper.InternalTestHelper;
 import tourGuide.service.RewardsService;
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
+import tourGuide.user.UserAttraction;
+import tourGuide.user.UserLocation;
 import tourGuide.user.UserReward;
 
 public class TestPerformance {
@@ -58,7 +60,6 @@ public class TestPerformance {
 	    StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		int i = 0 ;
 
 		for(User user : allUsers) {
 			tourGuideService.trackUserLocations(user);
@@ -70,7 +71,7 @@ public class TestPerformance {
 		assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	}
 	
-	@Ignore
+
 	@Test
 	public void highVolumeGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -81,16 +82,15 @@ public class TestPerformance {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
-		
-	    Attraction attraction = gpsUtil.getAttractions().get(0);
+
+        UserAttraction userAttraction = rewardsService.getAttraction().get(0);
 		List<User> allUsers = new ArrayList<>();
 		allUsers = tourGuideService.getAllUsers();
-		allUsers.forEach(u -> u.addToVisitedLocations(new VisitedLocation(u.getUserId(), attraction, new Date())));
-	     
+
+		allUsers.forEach(u -> u.addToUserLocations(new UserLocation(u.getUserId(), userAttraction.getLatitude(),userAttraction.getLongitude(), new Date())));
 	    allUsers.forEach(u -> rewardsService.calculateRewards(u));
-	    
 		for(User user : allUsers) {
-			assertTrue(user.getUserRewards().size() > 0);
+		    assertTrue(user.getUserRewards().size() > 0);
 		}
 		stopWatch.stop();
 		tourGuideService.tracker.stopTracking();

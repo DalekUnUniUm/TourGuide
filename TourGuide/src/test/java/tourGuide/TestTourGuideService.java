@@ -17,8 +17,7 @@ import rewardCentral.RewardCentral;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.service.RewardsService;
 import tourGuide.service.TourGuideService;
-import tourGuide.user.User;
-import tourGuide.user.UserLocation;
+import tourGuide.user.*;
 import tripPricer.Provider;
 
 public class TestTourGuideService {
@@ -119,38 +118,38 @@ public class TestTourGuideService {
 		assertTrue(allUsers.contains(user));
 		assertTrue(allUsers.contains(user2));
 	}
-	@Ignore // Not yet implemented
 	@Test
 	public void getNearbyAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		InternalTestHelper.setInternalUserNumber(0);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
-		
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
+		UserLocation userLocation = tourGuideService.trackUserLocations(user);
 		
-		List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
-		
+		List<RecommandedAttraction> attractions = tourGuideService.getFiveClosestAttraction(userLocation);
+		System.out.println("FIVE CLOSEST");
+		 for(RecommandedAttraction rA : attractions){
+		 System.out.println("Distance = " + rA.getDistance());
+		 }
 		tourGuideService.tracker.stopTracking();
 		
 		assertEquals(5, attractions.size());
 	}
-	
+	@Test
 	public void getTripDeals() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-		InternalTestHelper.setInternalUserNumber(0);
+		InternalTestHelper.setInternalUserNumber(1);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
-		
+		UserPreferences userPreferences = new UserPreferences(5,2,4,2,2);
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
+		user.setUserPreferences(userPreferences);
 
-		List<Provider> providers = tourGuideService.getTripDeals(user);
+
+		List<UserProvider> providers = tourGuideService.getTripDeals1(user);
 		
 		tourGuideService.tracker.stopTracking();
-		
 		assertEquals(10, providers.size());
 	}
-	
-	
 }

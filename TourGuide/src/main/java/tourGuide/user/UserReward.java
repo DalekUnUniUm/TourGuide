@@ -5,18 +5,18 @@ import gpsUtil.location.VisitedLocation;
 
 public class UserReward {
 
-	public final VisitedLocation visitedLocation;
-	public final Attraction attraction;
+	public final UserLocation userLocation;
+	public final UserAttraction userAttraction;
 	private int rewardPoints;
-	public UserReward(VisitedLocation visitedLocation, Attraction attraction, int rewardPoints) {
-		this.visitedLocation = visitedLocation;
-		this.attraction = attraction;
+	public UserReward(UserLocation userLocation, UserAttraction userAttraction, int rewardPoints) {
+		this.userLocation = userLocation;
+		this.userAttraction = userAttraction;
 		this.rewardPoints = rewardPoints;
 	}
 	
-	public UserReward(VisitedLocation visitedLocation, Attraction attraction) {
-		this.visitedLocation = visitedLocation;
-		this.attraction = attraction;
+	public UserReward(UserLocation userLocation, UserAttraction userAttraction) {
+		this.userLocation = userLocation;
+		this.userAttraction = userAttraction;
 	}
 
 	public void setRewardPoints(int rewardPoints) {

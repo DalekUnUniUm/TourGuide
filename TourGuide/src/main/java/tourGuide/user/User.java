@@ -14,11 +14,12 @@ public class User {
 	private String phoneNumber;
 	private String emailAddress;
 	private Date latestLocationTimestamp;
-	private List<VisitedLocation> visitedLocations = new ArrayList<>();
 	private List<UserLocation> userLocations = new ArrayList<>();
 	private List<UserReward> userRewards = new ArrayList<>();
-	private UserPreferences userPreferences = new UserPreferences();
+	private UserPreferences userPreferences ;
 	private List<Provider> tripDeals = new ArrayList<>();
+	private List<UserProvider> tripDeals1 = new ArrayList<>();
+	private List<RecommandedAttraction> recommandedAttractions = new ArrayList<>();
 	public User(UUID userId, String userName, String phoneNumber, String emailAddress) {
 		this.userId = userId;
 		this.userName = userName;
@@ -53,25 +54,8 @@ public class User {
 	public void setLatestLocationTimestamp(Date latestLocationTimestamp) {
 		this.latestLocationTimestamp = latestLocationTimestamp;
 	}
-	
-	public Date getLatestLocationTimestamp() {
-		return latestLocationTimestamp;
-	}
-	
-	public void addToVisitedLocations(VisitedLocation visitedLocation) {
-		visitedLocations.add(visitedLocation);
-	}
-	
-	public List<VisitedLocation> getVisitedLocations() {
-		return visitedLocations;
-	}
-	
-	public void clearVisitedLocations() {
-		visitedLocations.clear();
-	}
-	
 	public void addUserReward(UserReward userReward) {
-		if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
+		if(userRewards.stream().filter(r -> !r.userAttraction.getAttractionName().equals(userReward.userAttraction)).count() == 0) {
 			userRewards.add(userReward);
 		}
 	}
@@ -88,9 +72,6 @@ public class User {
 		this.userPreferences = userPreferences;
 	}
 
-	public VisitedLocation getLastVisitedLocation() {
-		return visitedLocations.get(visitedLocations.size() - 1);
-	}
 	
 	public void setTripDeals(List<Provider> tripDeals) {
 		this.tripDeals = tripDeals;
@@ -107,11 +88,24 @@ public class User {
 	public List<UserLocation> getUserLocations() {
 		return userLocations;
 	}
-	public void clearUserLocations() {
-		userLocations.clear();
-	}
 	public UserLocation getLastUserLocation() {
 		return userLocations.get(userLocations.size() - 1);
+	}
+
+	public List<UserProvider> getTripDeals1() {
+		return tripDeals1;
+	}
+
+	public void setTripDeals1(List<UserProvider> tripDeals1) {
+		this.tripDeals1 = tripDeals1;
+	}
+
+	public List<RecommandedAttraction> getRecommandedAttractions() {
+		return recommandedAttractions;
+	}
+
+	public void setRecommandedAttractions(List<RecommandedAttraction> recommandedAttractions) {
+		this.recommandedAttractions = recommandedAttractions;
 	}
 	/**---------------------------------------------------**/
 
