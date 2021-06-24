@@ -2,6 +2,7 @@ package tourGuide.service;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -19,6 +20,8 @@ import tourGuide.user.UserAttraction;
 import tourGuide.user.UserLocation;
 import tourGuide.user.UserReward;
 
+import javax.swing.text.html.HTMLDocument;
+
 @Service
 public class RewardsService {
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
@@ -27,14 +30,7 @@ public class RewardsService {
     private int defaultProximityBuffer = 10;
 	private int proximityBuffer = defaultProximityBuffer;
 	private int attractionProximityRange = 200;
-	private final GpsUtil gpsUtil;
-	private final RewardCentral rewardsCentral;
-	
-	public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
-		this.gpsUtil = gpsUtil;
-		this.rewardsCentral = rewardCentral;
-	}
-	
+
 	public void setProximityBuffer(int proximityBuffer) {
 		this.proximityBuffer = proximityBuffer;
 	}
@@ -43,12 +39,10 @@ public class RewardsService {
 		List<UserLocation> userLocations = user.getUserLocations();
 		List<UserAttraction> attractions = getAttraction();
 
-		for(UserLocation userLocation : userLocations) {
-			for(UserAttraction userAttraction : attractions) {
-				if(user.getUserRewards().stream().filter(r -> r.userAttraction.getAttractionName().equals(userAttraction.getAttractionName())).count() == 0) {
-					if(nearAttraction(userLocation, userAttraction)) {
-						user.addUserReward(new UserReward(userLocation, userAttraction, getRewardPoint(userAttraction)));
-					}
+		for(int i = 0 ; i < userLocations.size() ; i++){
+			for (int j = 0 ; j < attractions.size() ; j++){
+				if(nearAttraction(userLocations.get(i),attractions.get(j))) {
+					user.addUserReward(new UserReward(userLocations.get(i), attractions.get(j), getRewardPoint(attractions.get(j))));
 				}
 			}
 		}
