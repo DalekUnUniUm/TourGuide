@@ -21,13 +21,15 @@ public class UserPreferences {
 	private CurrencyUnit currency = Monetary.getCurrency("USD");
 	private Money lowerPricePoint = Money.of(0, currency);
 	private Money highPricePoint = Money.of(Integer.MAX_VALUE, currency);
+	private String userName ;
 	private int tripDuration ;
 	private int ticketQuantity ;
 	private int numberOfAdults ;
 	private int numberOfChildren ;
 	
-	public UserPreferences(int attractionProximity, int tripDuration, int ticketQuantity, int numberOfAdults , int numberOfChildren) {
+	public UserPreferences(int attractionProximity,String userName, int tripDuration, int ticketQuantity, int numberOfAdults , int numberOfChildren) {
 		this.attractionProximity = attractionProximity ;
+		this.userName = userName ;
 		this.tripDuration = tripDuration ;
 		this.ticketQuantity = ticketQuantity ;
 		this.numberOfAdults = numberOfAdults ;
@@ -90,4 +92,7 @@ public class UserPreferences {
 		this.numberOfChildren = numberOfChildren;
 	}
 
+	public String getUserName() {
+		return userName;
+	}
 }

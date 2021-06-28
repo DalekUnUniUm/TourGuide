@@ -107,7 +107,7 @@ public class TestTourGuideService {
 	public void getTripDeals() {
 		setUpPerTest(0);
 
-		UserPreferences userPreferences = new UserPreferences(5,2,4,2,2);
+		UserPreferences userPreferences = new UserPreferences(5,"jon",2,4,2,2);
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 		user.setUserPreferences(userPreferences);
 

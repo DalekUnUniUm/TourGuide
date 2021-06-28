@@ -79,6 +79,7 @@ public class TourGuideService {
 	/**Save userPreferences by Reading a JSON String**/
 	public String saveUserPreference(String userPreferences){
 		UserPreferences preferences = new Gson().fromJson(userPreferences,UserPreferences.class);
+		getUser(preferences.getUserName()).setUserPreferences(preferences);
 		return userPreferences ;
 	}
 	/**---------------------------------------------**/
@@ -98,7 +99,6 @@ public class TourGuideService {
 	}
 	public String getPriceFromApi(User user, int cumulatativeRewardPoints){
 		String url = "http://localhost:9003/getPrice?apiKey="+tripPricerApiKey+"&attractionId="+user.getUserId()+"&adults="+user.getUserPreferences().getNumberOfAdults()+"&children="+user.getUserPreferences().getNumberOfChildren()+"&nightsStay="+user.getUserPreferences().getTripDuration()+"&rewardsPoints="+cumulatativeRewardPoints;
-		System.out.println("url = " + url);
 		RestTemplate restTemplate = new RestTemplate();
 		String response = restTemplate.getForObject(url,String.class);
 		return response ;

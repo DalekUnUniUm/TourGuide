@@ -27,12 +27,7 @@ public class TourGuideController {
     public String index() {
         return "Greetings from TourGuide!";
     }
-    
-    /**@RequestMapping("/getLocation")
-    public String getLocation(@RequestParam String userName) {
-    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
-		return JsonStream.serialize(visitedLocation.location);
-    }**/
+
     @SuppressWarnings("unused")
     @RequestMapping("/getLocation")
     public String getLocation(@RequestParam String userName) {
