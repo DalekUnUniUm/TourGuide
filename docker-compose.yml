@@ -1,0 +1,35 @@
+version: '3.3'
+
+networks:
+    external-api:
+       external: true
+
+services:
+    tourguide:
+        image: springio/gs-tour-guide
+        container_name: tourguide
+        networks:
+           - external-api
+        ports:
+           - "8080:8080"
+    gpsutil:
+        image: springio/gs-gps-util
+        container_name: gpsutil
+        networks:
+           - external-api
+        ports:
+           - "9001:9001"
+    rewardcentral:
+        image: springio/gs-reward-central
+        container_name: rewardcentral
+        networks:
+          - external-api
+        ports:
+           - "9002:9002"
+    trippricer:
+        image: springio/gs-trip-pricer
+        container_name: trippricer
+        networks:
+          - external-api
+        ports:
+           - "9003:9003"
