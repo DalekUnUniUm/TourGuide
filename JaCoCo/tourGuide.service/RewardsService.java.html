@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RewardsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TourGuide</a> &gt; <a href="index.source.html" class="el_package">tourGuide.service</a> &gt; <span class="el_source">RewardsService.java</span></div><h1>RewardsService.java</h1><pre class="source lang-java linenums">package tourGuide.service;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.springframework.stereotype.Service;
+
+import gpsUtil.GpsUtil;
+import gpsUtil.location.Attraction;
+import gpsUtil.location.Location;
+import gpsUtil.location.VisitedLocation;
+import org.springframework.web.client.RestTemplate;
+import rewardCentral.RewardCentral;
+import tourGuide.user.User;
+import tourGuide.user.UserAttraction;
+import tourGuide.user.UserLocation;
+import tourGuide.user.UserReward;
+
+import javax.swing.text.html.HTMLDocument;
+
+@Service
+<span class="fc" id="L26">public class RewardsService {</span>
+    private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
+
+	// proximity in miles
+<span class="fc" id="L30">    private int defaultProximityBuffer = 10;</span>
+<span class="fc" id="L31">	private int proximityBuffer = defaultProximityBuffer;</span>
+<span class="fc" id="L32">	private int attractionProximityRange = 200;</span>
+
+	public void setProximityBuffer(int proximityBuffer) {
+<span class="fc" id="L35">		this.proximityBuffer = proximityBuffer;</span>
+<span class="fc" id="L36">	}</span>
+	
+	public void calculateRewards(User user) {
+<span class="fc" id="L39">		List&lt;UserLocation&gt; userLocations = user.getUserLocations();</span>
+<span class="fc" id="L40">		List&lt;UserAttraction&gt; attractions = getAttraction();</span>
+
+<span class="fc bfc" id="L42" title="All 2 branches covered.">		for(int i = 0 ; i &lt; userLocations.size() ; i++){</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">			for (int j = 0 ; j &lt; attractions.size() ; j++){</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">				if(nearAttraction(userLocations.get(i),attractions.get(j))) {</span>
+<span class="fc" id="L45">					user.addUserReward(new UserReward(userLocations.get(i), attractions.get(j), getRewardPoint(attractions.get(j))));</span>
+				}
+			}
+		}
+<span class="fc" id="L49">	}</span>
+	public List&lt;UserAttraction&gt; getAttraction(){
+<span class="fc" id="L51">        String url = &quot;http://localhost:9001/getAttractions&quot;;</span>
+<span class="fc" id="L52">        RestTemplate restTemplate = new RestTemplate();</span>
+<span class="fc" id="L53">        String reponse = restTemplate.getForObject(url,String.class);</span>
+<span class="fc" id="L54">        Type attractionListType = new TypeToken&lt;ArrayList&lt;UserAttraction&gt;&gt;(){}.getType();</span>
+<span class="fc" id="L55">	    List&lt;UserAttraction&gt; attractionList = new Gson().fromJson(reponse, attractionListType);</span>
+<span class="fc" id="L56">	    return attractionList ;</span>
+    }
+	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">		return getDistance(attraction, location) &gt; attractionProximityRange ? false : true;</span>
+	}
+	
+	private boolean nearAttraction(UserLocation userLocation, UserAttraction userAttraction) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		return getDistances(userLocation, userAttraction) &gt; proximityBuffer ? false : true;</span>
+	}
+	/**Get Reward Points from API**/
+	public int getRewardPoint(UserAttraction userAttraction){
+<span class="fc" id="L67">        String url = &quot;http://localhost:9002/getAttractionRewardPoints&quot;;</span>
+<span class="fc" id="L68">        RestTemplate restTemplate = new RestTemplate();</span>
+<span class="fc" id="L69">        String reponse = restTemplate.getForObject(url,String.class);</span>
+<span class="fc" id="L70">        return Integer.valueOf(reponse) ;</span>
+	}
+
+	public double getDistance(Location loc1, Location loc2) {
+<span class="fc" id="L74">        double lat1 = Math.toRadians(loc1.latitude);</span>
+<span class="fc" id="L75">        double lon1 = Math.toRadians(loc1.longitude);</span>
+<span class="fc" id="L76">        double lat2 = Math.toRadians(loc2.latitude);</span>
+<span class="fc" id="L77">        double lon2 = Math.toRadians(loc2.longitude);</span>
+
+<span class="fc" id="L79">        double angle = Math.acos(Math.sin(lat1) * Math.sin(lat2)</span>
+<span class="fc" id="L80">                               + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));</span>
+
+<span class="fc" id="L82">        double nauticalMiles = 60 * Math.toDegrees(angle);</span>
+<span class="fc" id="L83">        double statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;</span>
+<span class="fc" id="L84">        return statuteMiles;</span>
+	}
+    public double getDistances(UserLocation userLocation, UserAttraction userAttraction) {
+<span class="fc" id="L87">        double lat1 = Math.toRadians(userLocation.getLatitude());</span>
+<span class="fc" id="L88">        double lon1 = Math.toRadians(userLocation.getLongitude());</span>
+<span class="fc" id="L89">        double lat2 = Math.toRadians(userAttraction.getLatitude());</span>
+<span class="fc" id="L90">        double lon2 = Math.toRadians(userAttraction.getLongitude());</span>
+
+<span class="fc" id="L92">        double angle = Math.acos(Math.sin(lat1) * Math.sin(lat2)</span>
+<span class="fc" id="L93">                + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));</span>
+
+<span class="fc" id="L95">        double nauticalMiles = 60 * Math.toDegrees(angle);</span>
+<span class="fc" id="L96">        double statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;</span>
+<span class="fc" id="L97">        double statueKilometers = statuteMiles * 1.6 ;</span>
+
+<span class="fc" id="L99">        return statueKilometers;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
