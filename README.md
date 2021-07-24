@@ -8,9 +8,9 @@ This is the API's
 
 ### TECHNICAL
 
-Framework springBoot 2.1.6
-JAVA 8
-Docker version 3.7
+1.Framework springBoot 2.1.6
+2.JAVA 8
+3.Docker version 3.7
 
 ### Launch the application
 
